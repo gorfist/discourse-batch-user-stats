@@ -14,14 +14,14 @@ after_initialize do
     end
   end
 
-  require_dependency File.expand_path("../app/controllers/batch_user_stats_controller.rb", __FILE__)
+  require_dependency File.expand_path("../app/controllers/batch_user_stats/batch_user_stats_controller.rb", __FILE__)
   
   # Load routes for the engine
   BatchUserStats::Engine.routes.draw do
     get "/u/batch-stats" => "batch_user_stats#show"
   end
 
-  Discourse::Application.routes.append do
+  Discourse::Application.routes.prepend do
     mount ::BatchUserStats::Engine, at: "/"
   end
 end
