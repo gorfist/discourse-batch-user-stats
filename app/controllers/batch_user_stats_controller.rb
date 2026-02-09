@@ -1,7 +1,11 @@
 class BatchUserStats::BatchUserStatsController < ::ApplicationController
-  # Require the user to be logged in to see 'following' status
-  # (Optional: remove this if you want the endpoint public)
-  before_action :ensure_logged_in 
+  # Skip CSRF verification for API requests (using Api-Key + Api-Username headers)
+  skip_before_action :verify_authenticity_token, only: [:show]
+  
+  # Allow anonymous access - is_followed_by_me will be false for anonymous users
+  # current_user is automatically set by Discourse when Api-Key + Api-Username headers are provided
+  # If you want to require authentication, uncomment the line below:
+  # before_action :ensure_logged_in
 
   def show
     # 1. Parse and sanitize IDs

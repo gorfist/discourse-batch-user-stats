@@ -30,11 +30,30 @@ A Discourse plugin that provides a batch endpoint for retrieving user follower c
 
 **GET** `/u/batch-stats`
 
+### Authentication
+
+This endpoint supports **Discourse API authentication** using the standard headers:
+
+| Header | Description |
+|--------|-------------|
+| `Api-Key` | Your Discourse API key (generated in Admin > API > Keys) |
+| `Api-Username` | The username to act as (determines `is_followed_by_me` values) |
+
+> **Note:** If no authentication is provided, the endpoint still works but `is_followed_by_me` will always be `false`.
+
 ### Parameters
 
-- `user_ids`: A comma-separated list of user IDs (e.g., `1,2,3`).
+- `user_ids`: A comma-separated list of user IDs (e.g., `1,2,3`). Maximum 50 IDs per request.
 
-### Example Request
+### Example Request (with API Authentication)
+
+```bash
+curl -X GET "https://your-forum.com/u/batch-stats?user_ids=1,2,3" \
+  -H "Api-Key: your_api_key_here" \
+  -H "Api-Username: requesting_username"
+```
+
+### Example Request (Anonymous)
 
 ```
 GET https://your-forum.com/u/batch-stats?user_ids=1,2,3
