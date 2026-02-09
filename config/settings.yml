@@ -1,0 +1,4 @@
+plugins:
+  batch_user_stats_enabled:
+    default: true
+    client: false
