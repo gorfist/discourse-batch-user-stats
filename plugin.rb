@@ -1,27 +1,16 @@
 # name: discourse-batch-user-stats
 # about: Provides a batch endpoint for user follow statistics
-# version: 0.1
+# version: 0.2
 # authors: Arzdigital
 # url: https://github.com/your-repo/discourse-batch-user-stats
 
 enabled_site_setting :batch_user_stats_enabled
 
 after_initialize do
-  module ::BatchUserStats
-    class Engine < ::Rails::Engine
-      engine_name "batch_user_stats"
-      isolate_namespace BatchUserStats
-    end
-  end
-
-  require_dependency File.expand_path("../app/controllers/batch_user_stats/batch_user_stats_controller.rb", __FILE__)
-  
-  # Load routes for the engine
-  BatchUserStats::Engine.routes.draw do
-    get "/batch-user-stats" => "batch_user_stats#show"
-  end
+  # Load the controller
+  load File.expand_path("../app/controllers/batch_user_stats_controller.rb", __FILE__)
 
   Discourse::Application.routes.prepend do
-    mount ::BatchUserStats::Engine, at: "/"
+    get "/u/batch-stats" => "batch_user_stats#show", constraints: { format: :json }
   end
 end

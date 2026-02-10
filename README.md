@@ -28,7 +28,7 @@ A Discourse plugin that provides a batch endpoint for retrieving user follower c
 
 ### API Endpoint
 
-**GET** `/batch-user-stats`
+**GET** `/u/batch-stats.json`
 
 ### Authentication
 
@@ -48,7 +48,7 @@ This endpoint supports **Discourse API authentication** using the standard heade
 ### Example Request (with API Authentication)
 
 ```bash
-curl -X GET "https://your-forum.com/batch-user-stats?user_ids=1,2,3" \
+curl -X GET "https://your-forum.com/u/batch-stats.json?user_ids=1,2,3" \
   -H "Api-Key: your_api_key_here" \
   -H "Api-Username: requesting_username"
 ```
@@ -56,7 +56,7 @@ curl -X GET "https://your-forum.com/batch-user-stats?user_ids=1,2,3" \
 ### Example Request (Anonymous)
 
 ```
-GET https://your-forum.com/batch-user-stats?user_ids=1,2,3
+GET https://your-forum.com/u/batch-stats.json?user_ids=1,2,3
 ```
 
 ### Example Response
