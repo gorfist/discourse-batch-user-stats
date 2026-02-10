@@ -6,11 +6,8 @@
 
 enabled_site_setting :batch_user_stats_enabled
 
-after_initialize do
-  # Load the controller
-  load File.expand_path("../app/controllers/batch_user_stats_controller.rb", __FILE__)
+require_relative "lib/batch_user_stats/engine"
 
-  Discourse::Application.routes.prepend do
-    get "/u/batch-stats" => "batch_user_stats#show"
-  end
+after_initialize do
+  # No need for manual load since we're using an Engine
 end

@@ -1,4 +1,6 @@
-class BatchUserStatsController < ::ApplicationController
+# frozen_string_literal: true
+
+class BatchUserStats::BatchUserStatsController < ::ApplicationController
   requires_plugin "discourse-batch-user-stats"
 
   skip_before_action :verify_authenticity_token, only: [:show]
