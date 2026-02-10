@@ -18,7 +18,7 @@ after_initialize do
   
   # Load routes for the engine
   BatchUserStats::Engine.routes.draw do
-    get "/u/batch-stats" => "batch_user_stats#show"
+    get "/batch-user-stats" => "batch_user_stats#show"
   end
 
   Discourse::Application.routes.prepend do
