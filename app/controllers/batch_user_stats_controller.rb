@@ -1,49 +1,61 @@
 class BatchUserStatsController < ::ApplicationController
   requires_plugin "discourse-batch-user-stats"
 
-  # Skip CSRF verification for API requests (using Api-Key + Api-Username headers)
   skip_before_action :verify_authenticity_token, only: [:show]
 
   def show
-    # 1. Parse and sanitize IDs
-    user_ids = params[:user_ids].to_s.split(",").map(&:to_i).uniq.reject(&:zero?).first(50)
+    # Robust parsing of user_ids from comma-separated string or array
+    if params[:user_ids].is_a?(String)
+      ids = params[:user_ids].split(",")
+    else
+      ids = params[:user_ids] || []
+    end
+
+    user_ids = ids.map(&:to_i).uniq.reject(&:zero?).first(50)
 
     if user_ids.blank?
-      return render_json_error("No user IDs provided", status: 400)
+      return render json: { error: "No user IDs provided" }, status: 400
     end
 
-    # 2. Get Follower Counts (Bulk Query)
-    # Using the table name from the discourse-follow plugin
-    follower_counts =
-      DB
-        .query(
-          "SELECT user_id, COUNT(*) as count FROM user_followers WHERE user_id IN (?) GROUP BY user_id",
-          user_ids,
-        )
-        .to_h { |r| [r.user_id, r.count] }
+    # Safe SQL interpolation for the IN clause since we've cast everything to integers
+    ids_sql = user_ids.join(",")
 
-    # 3. Check if current user follows these users (Bulk Query)
+    # 1. Get Follower Counts (Bulk Query)
+    sql_counts = <<~SQL
+      SELECT user_id, COUNT(*) as count 
+      FROM user_followers 
+      WHERE user_id IN (#{ids_sql}) 
+      GROUP BY user_id
+    SQL
+
+    follower_counts = {}
+    DB.query(sql_counts).each do |r|
+      follower_counts[r.user_id.to_i] = r.count.to_i
+    end
+
+    # 2. Check if current user follows these users (Bulk Query)
     following_map = {}
     if current_user
-      following_map =
-        DB
-          .query(
-            "SELECT user_id FROM user_followers WHERE follower_id = ? AND user_id IN (?)",
-            current_user.id,
-            user_ids,
-          )
-          .to_h { |r| [r.user_id, true] }
+      sql_following = <<~SQL
+        SELECT user_id 
+        FROM user_followers 
+        WHERE follower_id = :current_user_id 
+        AND user_id IN (#{ids_sql})
+      SQL
+
+      DB.query(sql_following, current_user_id: current_user.id).each do |r|
+        following_map[r.user_id.to_i] = true
+      end
     end
 
-    # 4. Construct response
-    result =
-      user_ids.map do |id|
-        {
-          user_id: id,
-          follower_count: follower_counts[id] || 0,
-          is_followed_by_me: following_map[id] || false,
-        }
-      end
+    # 3. Construct response
+    result = user_ids.map do |id|
+      {
+        user_id: id,
+        follower_count: follower_counts[id] || 0,
+        is_followed_by_me: following_map[id] || false,
+      }
+    end
 
     render json: { users: result }
   end
